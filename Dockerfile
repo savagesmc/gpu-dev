@@ -1,4 +1,4 @@
-ARG cuda_version=9.1
+ARG cuda_version=9.0
 ARG cudnn_version=7
 FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel
 
@@ -55,9 +55,9 @@ RUN conda install \
 
 RUN pip install cntk-gpu
 
-RUN conda install -y -c numba cudatoolkit=9.0
+RUN conda install -y -c numba cudatoolkit=8.0
 
-ARG NUMBA_VERSION=0.37
+ARG NUMBA_VERSION=0.38
 RUN conda install -y -c numba numba=$NUMBA_VERSION
 
 RUN conda install -y accelerate
@@ -114,7 +114,7 @@ RUN sed -i 's/.*X11UseLocalhost.*/X11UseLocalhost no/' /etc/ssh/sshd_config
 #####################################################################
 
 #ENV PYTHONPATH='/src/:$PYTHONPATH'
-#RUN pip install tf-nightly-gpu
+RUN pip install tf-nightly-gpu
 
 EXPOSE 8888
 EXPOSE 6006
