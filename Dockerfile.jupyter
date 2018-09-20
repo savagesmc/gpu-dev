@@ -1,0 +1,8 @@
+FROM gpu-dev
+
+RUN pip install --upgrade jupyter
+
+EXPOSE 8888
+EXPOSE 6006
+
+CMD ["jupyter", "notebook", "--port=8888", "--ip=0.0.0.0", "--allow-root"]
