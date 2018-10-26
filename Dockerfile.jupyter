@@ -1,6 +1,6 @@
 FROM gpu-dev
 
-RUN pip install --upgrade jupyter
+RUN python3 -m pip install --upgrade jupyter
 
 EXPOSE 8888
 EXPOSE 6006
