@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorflow:18.09-py3
+FROM nvcr.io/nvidia/tensorflow:18.12-py3
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -115,7 +115,7 @@ RUN apt-get update && apt-get install -y \
   python3-tk \
   && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install ipython
+RUN python3 -m pip install --upgrade pip setuptools wheel ipython keras
 
 WORKDIR /opt
 
