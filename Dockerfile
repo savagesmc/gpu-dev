@@ -1,4 +1,5 @@
-FROM nvcr.io/nvidia/tensorflow:18.12-py3
+#FROM nvcr.io/nvidia/tensorflow:18.12-py3
+FROM nvcr.io/nvidia/tensorflow:19.01-py3
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -144,6 +145,23 @@ RUN cd opencv && mkdir build && cd build \
   && make install -j"$(nproc)" \
   && cd ../.. \
   && rm -fr opencv && rm -fr opencv_contrib
+
+RUN apt-get update && apt-get install -y bc
+
+RUN apt-get install -y ocl-icd-libopencl1
+
+# WORKDIR /build
+
+# RUN apt-get install -y nasm
+
+# RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git nv-codec-headers \
+    # && cd nv-codec-headers && make && make install \
+    # && cd ..
+
+# RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg \
+    # && cd ffmpeg && git submodule update --init --recursive \
+    # && ./configure --prefix=/usr \
+    # && make -j `nproc` install
 
 # Tensorboard
 EXPOSE 6006

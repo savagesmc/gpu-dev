@@ -2,6 +2,8 @@ FROM gpu-dev
 
 RUN python3 -m pip install --upgrade jupyter
 
+RUN python3 -m pip install gym
+
 EXPOSE 8888
 EXPOSE 6006
 
