@@ -1,5 +1,4 @@
-#FROM nvcr.io/nvidia/tensorflow:18.12-py3
-FROM nvcr.io/nvidia/tensorflow:19.01-py3
+FROM nvidia/cuda:10.0-cudnn7-devel
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -32,6 +31,9 @@ RUN apt-get update && apt-get install -y locales
 
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+ENV TZ=America/Chicago
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
@@ -71,7 +73,7 @@ RUN apt-get update && apt-get install -y \
   libavutil-dev \
   libfreetype6-dev \
   libswscale-dev \
-  libswscale-ffmpeg3 \
+  libswscale4 \
   ffmpeg \
   libharfbuzz-dev \
   libtesseract-dev \
@@ -86,7 +88,6 @@ RUN apt-get update && apt-get install -y \
   gstreamer1.0-plugins-base-apps \
   libgstreamer1.0-0 \
   libgstreamer1.0-dev \
-  gstreamer-tools \
   libgstreamer-plugins-bad1.0-0 \
   libgstreamer-plugins-bad1.0-dev \
   libgstreamer-plugins-base1.0-0 \
@@ -95,7 +96,6 @@ RUN apt-get update && apt-get install -y \
   libgstreamer-plugins-good1.0-dev \
   libqt5gstreamer-1.0-0 \
   libqt5gstreamer-dev \
-  qtgstreamer-plugins \
   qtgstreamer-plugins-qt5 \
   protobuf-compiler \
   libboost-all-dev \
@@ -105,7 +105,6 @@ RUN apt-get update && apt-get install -y \
   libleveldb-dev \
   libsnappy-dev \
   libatlas-base-dev \
-  libatlas-dev \
   python-numpy \
   liblapacke \
   liblapacke-dev \
@@ -116,28 +115,55 @@ RUN apt-get update && apt-get install -y \
   python3-tk \
   && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y \
+    python3-pip
+
 RUN python3 -m pip install --upgrade pip setuptools wheel ipython keras
 
 WORKDIR /opt
 
-RUN git clone --branch 1.0 https://github.com/bvlc/caffe
+RUN apt-get update && apt-get install -y \
+    cuda-cublas-10-0 \
+    cuda-cublas-dev-10-0 \
+    git \
+    golang \
+    libprotobuf-dev \
+    libprotoc-dev \
+    protobuf-compiler \
+    protobuf-compiler-grpc \
+    python3-protobuf
 
-RUN cd caffe && mkdir build && cd build \
-   && cmake -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OPENCV=OFF -Wno-dev \
-   -D CUDA_ARCH_NAME=Manual -D CUDA_ARCH_BIN="35 52 60 61 70" \
-   -D CUDA_ARCH_PTX="70" ..
+RUN apt-get update && apt-get install -y \
+    caffe-cuda \
+    caffe-tools-cuda \
+    libcaffe-cuda-dev \
+    python3-caffe-cuda
 
-RUN cd caffe/build && make all -j"$(nproc)" \
-   && make install -j"$(nproc)" \
-   && cd ../..
+# RUN git clone --branch 1.0 https://github.com/bvlc/caffe
+
+# RUN cd caffe && mkdir build && cd build \
+   # && cmake -D CMAKE_INSTALL_PREFIX=/usr/local -D USE_OPENCV=OFF -Wno-dev \
+   # -D CUDA_ARCH_NAME=Manual -D CUDA_ARCH_BIN="35 52 60 61 70" \
+   # -D CUDA_ARCH_PTX="70" ..
+
+# RUN cd caffe/build && make all -j"$(nproc)" \
+   # && make install -j"$(nproc)" \
+   # && cd ../..
+
+# RUN apt-get update && apt-get install -y \
+    # python3-opencv
 
 RUN git clone --branch 3.4.3 https://github.com/opencv/opencv
 RUN git clone --branch 3.4.3 https://github.com/opencv/opencv_contrib
+
+RUN apt-get update && apt-get install -y \
+    libv4l-dev
 
 RUN cd opencv && mkdir build && cd build \
   && cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     -D WITH_CUDA=ON \
+    -D WITH_LIBV4L=ON \
     -D INSTALL_PYTHON_EXAMPLES=ON \
     -D OPENCV_EXTRA_MODULES_PATH=/opt/opencv_contrib/modules \
     -D BUILD_EXAMPLES=ON -D BUILD_DOCS=ON .. \
@@ -149,19 +175,6 @@ RUN cd opencv && mkdir build && cd build \
 RUN apt-get update && apt-get install -y bc
 
 RUN apt-get install -y ocl-icd-libopencl1
-
-# WORKDIR /build
-
-# RUN apt-get install -y nasm
-
-# RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git nv-codec-headers \
-    # && cd nv-codec-headers && make && make install \
-    # && cd ..
-
-# RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg \
-    # && cd ffmpeg && git submodule update --init --recursive \
-    # && ./configure --prefix=/usr \
-    # && make -j `nproc` install
 
 # Tensorboard
 EXPOSE 6006
